@@ -1,0 +1,385 @@
+﻿# Nova Salud - Sistema web para botica
+
+## 1. DescripciÃ³n general
+
+Nova Salud es una aplicaciÃ³n web para administrar una botica. Permite controlar productos, inventario, clientes, ventas internas, ventas web, comprobantes y alertas de reposiciÃ³n.
+
+La aplicaciÃ³n fue construida con:
+
+- React para crear la interfaz y manejar el estado.
+- JSX para escribir los componentes.
+- JavaScript para la lÃ³gica del sistema.
+- CSS para el diseÃ±o visual y responsive.
+- Vite para ejecutar y compilar el proyecto.
+- `localStorage` como base de datos temporal local.
+
+## 2. CÃ³mo ejecutar el proyecto
+
+Desde la carpeta del proyecto:
+
+```bash
+npm install
+npm run dev
+```
+
+DespuÃ©s se puede abrir:
+
+```text
+http://localhost:5173
+```
+
+Para generar una versiÃ³n de producciÃ³n:
+
+```bash
+npm run build
+```
+
+Para probar la compilaciÃ³n:
+
+```bash
+npm run preview
+```
+
+## 3. Estructura del proyecto
+
+```text
+C:\Entregable
+â”œâ”€â”€ index.html
+â”œâ”€â”€ package.json
+â”œâ”€â”€ package-lock.json
+â”œâ”€â”€ README.md
+â””â”€â”€ src
+    â”œâ”€â”€ App.jsx
+    â”œâ”€â”€ main.jsx
+    â”œâ”€â”€ styles.css
+    â”œâ”€â”€ components
+    â”‚   â”œâ”€â”€ ClientsView.jsx
+    â”‚   â”œâ”€â”€ InventoryView.jsx
+    â”‚   â””â”€â”€ ProductsView.jsx
+    â””â”€â”€ data
+        â”œâ”€â”€ clients.js
+        â”œâ”€â”€ products.js
+        â””â”€â”€ storage.js
+```
+
+## 4. Archivo principal: `src/App.jsx`
+
+`App.jsx` es el componente principal de la aplicaciÃ³n. Coordina:
+
+- La navegaciÃ³n entre pestaÃ±as.
+- Los productos y el inventario.
+- El carrito de ventas internas.
+- El carrito de ventas web.
+- Los clientes.
+- Las alertas de reposiciÃ³n.
+- Los comprobantes.
+- Las mÃ©tricas del dashboard.
+- Los mensajes de confirmaciÃ³n.
+
+### Estado principal
+
+React utiliza `useState` para mantener los datos mientras la aplicaciÃ³n estÃ¡ abierta:
+
+```js
+const [products, setProducts] = useState(...)
+const [clients, setClients] = useState(...)
+const [receipts, setReceipts] = useState(...)
+```
+
+Cada vez que un estado cambia, React vuelve a renderizar la parte de la pantalla que necesita actualizarse.
+
+## 5. Componentes separados
+
+### `src/components/ProductsView.jsx`
+
+Contiene elementos reutilizables para mostrar productos:
+
+- `ProductTable`: tabla de productos del inventario.
+- `ProductCards`: tarjetas usadas en ventas internas y ventas web.
+
+TambiÃ©n muestra el estado del stock:
+
+- Disponible.
+- Stock bajo.
+- Stock crÃ­tico.
+
+### `src/components/InventoryView.jsx`
+
+Administra la pantalla de inventario. Incluye:
+
+- BÃºsqueda de productos.
+- Filtro por categorÃ­a.
+- CreaciÃ³n de productos.
+- EdiciÃ³n de productos.
+- EliminaciÃ³n de productos.
+- ActualizaciÃ³n de unidades.
+- ValidaciÃ³n de precios, stock y stock mÃ­nimo.
+
+El inventario recibe las funciones desde `App.jsx`, por eso los cambios se reflejan en ventas, alertas y dashboard.
+
+### `src/components/ClientsView.jsx`
+
+Administra los clientes:
+
+- Lista de clientes.
+- BÃºsqueda por nombre, DNI o telÃ©fono.
+- Registro de clientes.
+- EdiciÃ³n de clientes.
+- EliminaciÃ³n con confirmaciÃ³n.
+- ValidaciÃ³n de DNI, telÃ©fono y correo.
+
+## 6. Datos iniciales
+
+### `src/data/products.js`
+
+Contiene la lista inicial de productos. Actualmente estÃ¡ vacÃ­a para que el dueÃ±o pueda comenzar desde cero.
+
+TambiÃ©n contiene `getProductStatus`, que determina el estado del inventario:
+
+```js
+if (stock <= stockMinimo / 2) {
+  return 'Stock crÃ­tico'
+}
+
+if (stock <= stockMinimo) {
+  return 'Stock bajo'
+}
+
+return 'Disponible'
+```
+
+### `src/data/clients.js`
+
+Contiene los clientes iniciales. Actualmente tambiÃ©n estÃ¡ vacÃ­a.
+
+## 7. Base de datos temporal local
+
+### `src/data/storage.js`
+
+Este archivo contiene dos funciones:
+
+```js
+loadData(key, fallback)
+saveData(key, value)
+```
+
+`loadData` lee informaciÃ³n guardada en el navegador. Si todavÃ­a no existe informaciÃ³n, utiliza el valor inicial.
+
+`saveData` convierte los datos a JSON y los guarda en `localStorage`.
+
+La aplicaciÃ³n guarda:
+
+```text
+nova-salud-v2:products
+nova-salud-v2:clients
+nova-salud-v2:receipts
+nova-salud-v2:dailySales
+nova-salud-v2:salesCount
+```
+
+Por ejemplo:
+
+```js
+useEffect(() => saveData('products', products), [products])
+```
+
+Esto significa que cada vez que cambia `products`, el inventario se guarda automÃ¡ticamente.
+
+### Importante
+
+Esta base es local:
+
+- Solo existe en el navegador actual.
+- No se comparte entre computadoras.
+- Si se borran los datos del navegador, se pierde la informaciÃ³n.
+- No es todavÃ­a una base de datos para producciÃ³n.
+
+Para una versiÃ³n real multiusuario se necesitarÃ­a un backend y una base como PostgreSQL, MySQL o MongoDB.
+
+## 8. Funcionamiento del inventario
+
+### Crear producto
+
+El usuario pulsa `ï¼‹ Producto` y registra:
+
+- Nombre.
+- CategorÃ­a.
+- PresentaciÃ³n.
+- Precio.
+- Unidades actuales.
+- Stock mÃ­nimo.
+
+DespuÃ©s de guardar:
+
+1. El producto se agrega al estado `products`.
+2. Se guarda en `localStorage`.
+3. Aparece en inventario.
+4. Aparece en ventas.
+5. Puede generar una alerta si estÃ¡ bajo el mÃ­nimo.
+
+### Editar producto
+
+El usuario pulsa `Editar`, modifica los datos y guarda. El mismo producto se actualiza en todas las pantallas porque existe un Ãºnico estado central de productos.
+
+### Eliminar producto
+
+El sistema solicita confirmaciÃ³n. Al confirmar:
+
+1. El producto se elimina del inventario.
+2. Se elimina del carrito activo.
+3. Se actualiza la base local.
+
+## 9. Alertas y reposiciÃ³n
+
+Un producto genera alerta cuando:
+
+```text
+stock actual <= stock mÃ­nimo
+```
+
+Las alertas aparecen en:
+
+- El contador del menÃº Inventario.
+- El panel de alertas del dashboard.
+- El Ã­cono de notificaciones.
+
+Al pulsar `Reponer`:
+
+1. Se abre un formulario.
+2. Se ingresan las unidades recibidas.
+3. El stock aumenta.
+4. La alerta se recalcula.
+5. El inventario se guarda automÃ¡ticamente.
+
+## 10. Ventas internas
+
+En la pestaÃ±a **Ventas**, el usuario selecciona productos y los agrega al carrito.
+
+Al registrar la venta:
+
+1. Se valida que haya productos.
+2. Se valida que no se supere el stock.
+3. Se descuentan las unidades.
+4. Se actualiza el total de ventas.
+5. Se registra una operaciÃ³n.
+6. Se crea una boleta.
+7. El comprobante se guarda.
+8. Se muestran las alertas nuevas si el stock bajÃ³.
+
+## 11. Ventas web
+
+La pestaÃ±a **Ventas web** es independiente de las ventas internas.
+
+Tiene:
+
+- CatÃ¡logo para clientes de la pÃ¡gina web.
+- Carrito web separado.
+- ValidaciÃ³n de stock.
+- ConfirmaciÃ³n del pedido.
+
+Aunque el carrito es independiente, utiliza los mismos productos del inventario. Por eso un pedido web tambiÃ©n descuenta unidades reales.
+
+## 12. Comprobantes
+
+La pestaÃ±a **Comprobantes** muestra el historial de:
+
+- Boletas de ventas internas.
+- Pedidos web.
+
+Cada comprobante contiene:
+
+- NÃºmero.
+- Tipo.
+- Fecha y hora.
+- Productos.
+- Cantidades.
+- Precios.
+- Total.
+
+El historial se almacena en `localStorage`, por lo que permanece despuÃ©s de actualizar la pÃ¡gina.
+
+## 13. Dashboard
+
+El dashboard se actualiza con el estado actual:
+
+- Ventas acumuladas.
+- NÃºmero de operaciones.
+- Total de productos en stock.
+- Alertas de reposiciÃ³n.
+- Ãšltimo comprobante.
+- Ãšltima operaciÃ³n registrada.
+
+No se utilizan valores fijos para las operaciones nuevas: las ventas, reposiciones y productos modifican los datos en tiempo real.
+
+## 14. Validaciones implementadas
+
+### Productos
+
+- Nombre obligatorio.
+- CategorÃ­a obligatoria.
+- PresentaciÃ³n obligatoria.
+- Precio mayor o igual a cero.
+- Stock mayor o igual a cero.
+- Stock mÃ­nimo mayor o igual a cero.
+
+### Clientes
+
+- Nombre mÃ­nimo de tres caracteres.
+- DNI de ocho dÃ­gitos.
+- TelÃ©fono vÃ¡lido.
+- Correo electrÃ³nico vÃ¡lido.
+- DNI no duplicado.
+
+### Ventas
+
+- No se puede vender sin productos.
+- No se puede superar el stock disponible.
+- No se pueden agregar mÃ¡s unidades que las existentes.
+
+### ReposiciÃ³n
+
+- La cantidad debe ser un nÃºmero entero.
+- La cantidad debe ser mayor que cero.
+
+## 15. DiseÃ±o y experiencia de usuario
+
+`src/styles.css` contiene todos los estilos visuales:
+
+- Sidebar.
+- Dashboard.
+- Tablas.
+- Formularios.
+- Modales.
+- Notificaciones.
+- Tarjetas de productos.
+- DiseÃ±o responsive.
+
+La interfaz se adapta a computadoras, tablets y celulares mediante reglas `@media`.
+
+## 16. Flujo completo de uso
+
+El flujo recomendado para el dueÃ±o es:
+
+1. Registrar productos en Inventario.
+2. Definir stock mÃ­nimo.
+3. Registrar clientes.
+4. Registrar ventas internas o pedidos web.
+5. Revisar las alertas.
+6. Reponer medicamentos.
+7. Consultar los comprobantes.
+8. Revisar las mÃ©tricas del dashboard.
+
+Todos los cambios se guardan automÃ¡ticamente en el navegador.
+
+## 17. PrÃ³xima mejora recomendada
+
+Para convertir esta demostraciÃ³n en un sistema productivo se recomienda agregar:
+
+- Backend con autenticaciÃ³n.
+- Base de datos centralizada.
+- Roles de usuario.
+- API para productos, clientes y ventas.
+- GeneraciÃ³n fiscal real de comprobantes.
+- Copias de seguridad.
+- Control de permisos.
+- Historial de auditorÃ­a.
